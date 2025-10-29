@@ -8,7 +8,8 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                                QHBoxLayout, QGridLayout, QGroupBox, QLabel, 
                                QLineEdit, QPushButton, QComboBox, QSpinBox, 
                                QCheckBox, QTextEdit, QFileDialog, QMessageBox,
-                               QProgressBar, QSplitter, QListWidget, QListWidgetItem)
+                               QProgressBar, QSplitter, QListWidget, QListWidgetItem,
+                               QScrollArea)
 from PySide6.QtCore import QThread, Signal, Qt
 from PySide6.QtGui import QFont, QPalette, QColor
 
@@ -126,7 +127,7 @@ class UpscaylGUI(QMainWindow):
     def init_ui(self):
         """初始化用户界面"""
         self.setWindowTitle("Upscayl 图形界面 v1.0 - 多目录处理")
-        self.setMinimumSize(900, 700)
+        self.setMinimumSize(1000, 800)  # 增加窗口最小尺寸
         
         # 创建中央部件
         central_widget = QWidget()
@@ -146,8 +147,8 @@ class UpscaylGUI(QMainWindow):
         log_widget = self.create_log_widget()
         splitter.addWidget(log_widget)
         
-        # 设置分割器比例
-        splitter.setSizes([400, 300])
+        # 设置分割器比例 - 让日志区域更大
+        splitter.setSizes([450, 350])
         
         main_layout.addWidget(splitter)
         
@@ -164,11 +165,20 @@ class UpscaylGUI(QMainWindow):
         basic_group = QGroupBox("基本参数")
         basic_layout = QGridLayout(basic_group)
         
-        # 输入目录列表
+        # 输入目录列表 - 增加高度并添加滚动区域
         basic_layout.addWidget(QLabel("输入目录列表:"), 0, 0)
+        
+        # 创建滚动区域来包装目录列表
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setMinimumHeight(180)  # 增加最小高度
+        scroll_area.setMaximumHeight(250)  # 设置最大高度
+        
         self.directories_list = QListWidget()
-        self.directories_list.setMaximumHeight(100)
-        basic_layout.addWidget(self.directories_list, 0, 1, 1, 2)
+        self.directories_list.setAlternatingRowColors(True)  # 交替行颜色，提高可读性
+        scroll_area.setWidget(self.directories_list)
+        
+        basic_layout.addWidget(scroll_area, 0, 1, 1, 2)
         
         # 目录操作按钮
         dir_buttons_layout = QHBoxLayout()
@@ -298,28 +308,46 @@ class UpscaylGUI(QMainWindow):
         return widget
         
     def create_log_widget(self):
-        """创建日志输出区域"""
+        """创建日志输出区域 - 改进显示效果"""
         widget = QWidget()
         layout = QVBoxLayout(widget)
         
-        layout.addWidget(QLabel("处理日志:"))
+        # 日志标题和操作按钮
+        log_header_layout = QHBoxLayout()
+        log_header_layout.addWidget(QLabel("处理日志:"))
+        log_header_layout.addStretch()
         
+        # 添加清空日志按钮到标题栏
+        self.clear_log_header_btn = QPushButton("清空日志")
+        self.clear_log_header_btn.clicked.connect(self.clear_log)
+        self.clear_log_header_btn.setMaximumWidth(80)
+        log_header_layout.addWidget(self.clear_log_header_btn)
+        
+        layout.addLayout(log_header_layout)
+        
+        # 日志文本框 - 改进显示
         self.log_text = QTextEdit()
         self.log_text.setReadOnly(True)
-        font = QFont("Consolas", 9)
+        
+        # 设置更好的字体
+        font = QFont("Consolas", 10)  # 增加字体大小
         self.log_text.setFont(font)
         
-        # 设置深色主题
+        # 设置更舒适的深色主题
         palette = self.log_text.palette()
-        palette.setColor(QPalette.Base, QColor(30, 30, 30))
-        palette.setColor(QPalette.Text, QColor(220, 220, 220))
+        palette.setColor(QPalette.Base, QColor(25, 25, 30))  # 更深的背景
+        palette.setColor(QPalette.Text, QColor(220, 220, 220))  # 更亮的文字
         self.log_text.setPalette(palette)
+        
+        # 设置最小高度确保有足够的显示空间
+        self.log_text.setMinimumHeight(250)
         
         layout.addWidget(self.log_text)
         
         # 进度条
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
+        self.progress_bar.setTextVisible(True)
         layout.addWidget(self.progress_bar)
         
         return widget
@@ -330,15 +358,54 @@ class UpscaylGUI(QMainWindow):
         
         self.start_btn = QPushButton("开始处理")
         self.start_btn.clicked.connect(self.start_processing)
-        self.start_btn.setStyleSheet("QPushButton { background-color: #4CAF50; color: white; font-weight: bold; }")
+        self.start_btn.setStyleSheet("""
+            QPushButton { 
+                background-color: #4CAF50; 
+                color: white; 
+                font-weight: bold;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+            }
+        """)
         
         self.stop_btn = QPushButton("停止处理")
         self.stop_btn.clicked.connect(self.stop_processing)
         self.stop_btn.setEnabled(False)
-        self.stop_btn.setStyleSheet("QPushButton { background-color: #f44336; color: white; }")
+        self.stop_btn.setStyleSheet("""
+            QPushButton { 
+                background-color: #f44336; 
+                color: white; 
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #da190b;
+            }
+            QPushButton:disabled {
+                background-color: #cccccc;
+            }
+        """)
         
         self.clear_btn = QPushButton("清空日志")
         self.clear_btn.clicked.connect(self.clear_log)
+        self.clear_btn.setStyleSheet("""
+            QPushButton { 
+                padding: 8px 16px;
+                border: 1px solid #cccccc;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #f0f0f0;
+            }
+        """)
         
         layout.addWidget(self.start_btn)
         layout.addWidget(self.stop_btn)
@@ -354,7 +421,8 @@ class UpscaylGUI(QMainWindow):
             "选择输入目录"
         )
         if dir_path and dir_path not in [self.directories_list.item(i).text() for i in range(self.directories_list.count())]:
-            self.directories_list.addItem(dir_path)
+            item = QListWidgetItem(dir_path)
+            self.directories_list.addItem(item)
             
     def remove_directory(self):
         """移除选中的目录"""
