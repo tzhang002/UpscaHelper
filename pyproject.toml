@@ -1,0 +1,18 @@
+[project]
+name = "final2x"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "final2x-core>=4.0.0",
+    "pymupdf>=1.26.5",
+    "pyside6>=6.10.0",
+    "reportlab>=4.4.4",
+    "torch>=2.9.0",
+    "torchvision>=0.24.0",
+]
+
+[[tool.uv.index]]
+url = "https://mirrors.aliyun.com/pypi/simple"
+default = true
