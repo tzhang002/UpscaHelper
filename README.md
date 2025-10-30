@@ -12,9 +12,9 @@
 
    `git clone https://github.com/tzhang002/UpscaHelper.git`
 
-2. 进入项目目录，下载文件https://github.com/tzhang002/UpscaHelper/releases/download/v1.0/models.zip并解压到项目目录中
+2. 进入项目目录，下载文件`https://github.com/tzhang002/UpscaHelper/releases/download/v1.0/models.zip` 并解压到项目目录中
 3. 更新依赖: `uv sync`
-4. 下载https://github.com/tzhang002/upscayl-ncnn/releases/tag/v1.0中的对应操作系统的预编译文件
+4. 下载`https://github.com/tzhang002/upscayl-ncnn/releases/tag/v1.0`中的对应操作系统的预编译文件
 5. 将文件移到添加到环境变量的目录中(Linux例如放入/usr/local/bin/)
 6. `uv run main.py` 即可看到UI界面
 
